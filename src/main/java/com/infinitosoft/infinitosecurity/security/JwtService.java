@@ -6,12 +6,14 @@ import com.infinitosoft.infinitosecurity.model.Usuario;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.io.DecodingException;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class JwtService {
@@ -23,8 +25,38 @@ public class JwtService {
     }
 
     private Key signingKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(properties.getSecret());
+        String secret = properties.getSecret();
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT secret no configurado (jwt.secret)");
+        }
+        byte[] keyBytes;
+        // Evitar intentar decodificar valores obviamente no-Base64
+        if (looksLikeBase64(secret)) {
+            try {
+                keyBytes = Decoders.BASE64.decode(secret);
+            } catch (DecodingException | IllegalArgumentException ex) {
+                // Si la decodificación falla, usar el texto plano como bytes UTF-8
+                keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+            }
+        } else {
+            keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        }
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private boolean looksLikeBase64(String s) {
+        // A-Z a-z 0-9 + / = y longitud múltiplo de 4, sin espacios
+        if (s.indexOf(' ') >= 0 || s.indexOf('\n') >= 0 || s.indexOf('\r') >= 0 || s.indexOf('\t') >= 0) {
+            return false;
+        }
+        int len = s.length();
+        if (len == 0 || (len % 4) != 0) return false;
+        for (int i = 0; i < len; i++) {
+            char c = s.charAt(i);
+            boolean ok = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '+' || c == '/' || c == '=';
+            if (!ok) return false;
+        }
+        return true;
     }
 
     public String generateToken(String jti, Usuario usuario) {
@@ -34,7 +66,17 @@ public class JwtService {
         claims.put("jti", jti);
         claims.put("nombre", usuario.getNombre());
         claims.put("telefono", usuario.getTelefono());
-        claims.put("roles", usuario.getRoles().stream().map(Rol::getSigla).toList());
+        // Incluir roles como objetos con sigla y nombre para que el consumidor pueda mostrar ambos.
+        // Nota: tokens antiguos guardaban solo la sigla (List<String>). getUserInfo mantiene compatibilidad.
+        List<Map<String, Object>> rolesClaim = usuario.getRoles().stream()
+                .map(r -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("sigla", r.getSigla());
+                    m.put("nombre", r.getNombre());
+                    return m;
+                })
+                .toList();
+        claims.put("roles", rolesClaim);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -75,11 +117,28 @@ public class JwtService {
         String nombre = claims.get("nombre", String.class);
         String correo = claims.getSubject();
         String telefono = claims.get("telefono", String.class);
-        List<String> roles = claims.get("roles", List.class);
-
-        List<Rol> rolList = roles == null ? List.of() : roles.stream()
-                .map(sigla -> Rol.builder().sigla(sigla).build())
-                .toList();
+        Object rolesObj = claims.get("roles");
+        List<Rol> rolList = List.of();
+        if (rolesObj instanceof List<?> list) {
+            if (!list.isEmpty() && list.get(0) instanceof Map) {
+                // Formato nuevo: List<Map> con {sigla, nombre}
+                rolList = list.stream()
+                        .map(it -> (Map<?, ?>) it)
+                        .map(m -> Rol.builder()
+                                .sigla(Objects.toString(m.get("sigla"), null))
+                                .nombre(Objects.toString(m.get("nombre"), null))
+                                .build())
+                        .toList();
+            } else if (!list.isEmpty() && list.get(0) instanceof String) {
+                // Formato legado: List<String> (solo siglas)
+                rolList = list.stream()
+                        .map(String.class::cast)
+                        .map(sigla -> Rol.builder().sigla(sigla).build())
+                        .toList();
+            } else if (list.isEmpty()) {
+                rolList = List.of();
+            }
+        }
         return UserInfo.builder()
                 .nombre(nombre)
                 .correoElectronico(correo)

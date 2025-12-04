@@ -8,6 +8,7 @@ import com.infinitosoft.infinitosecurity.repository.UsuarioRepository;
 import com.infinitosoft.infinitosecurity.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,17 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    @Transactional
     public Usuario crearUsuario(String nombre, String correoElectronico, String contrasena, String telefono) {
         if (usuarioRepository.existsByCorreoElectronico(correoElectronico)) {
             throw new DataIntegrityViolationException("El correo electrónico ya existe");
         }
+        // Asegurar que el rol 'invitado' exista; si no, crearlo de forma idempotente
         Rol invitado = rolRepository.findBySigla("invitado")
-                .orElseThrow(() -> new IllegalStateException("Rol 'invitado' no encontrado, verifique data.sql"));
+                .orElseGet(() -> rolRepository.save(Rol.builder()
+                        .nombre("Invitado")
+                        .sigla("invitado")
+                        .build()));
 
         Usuario usuario = Usuario.builder()
                 .nombre(nombre)
@@ -68,6 +74,20 @@ public class AuthService {
     }
 
     public UserInfo getClaims(String token) {
-        return jwtService.getUserInfo(token);
+        // Obtener claims desde el token (compatible con tokens nuevos y legados)
+        UserInfo info = jwtService.getUserInfo(token);
+
+        // Enriquecer roles con el nombre desde BD cuando venga nulo (tokens legados)
+        var roles = info.getRoles();
+        if (roles != null && !roles.isEmpty()) {
+            roles.forEach(r -> {
+                if (r != null && r.getNombre() == null && r.getSigla() != null) {
+                    rolRepository.findBySigla(r.getSigla())
+                            .ifPresent(dbRol -> r.setNombre(dbRol.getNombre()));
+                }
+            });
+        }
+
+        return info;
     }
 }

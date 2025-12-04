@@ -1,5 +1,7 @@
 -- Esquema de tablas para autenticación y autorización JWT
--- Schema: security (configurado en application.properties)
+-- Garantizar que exista el esquema "security" y fijarlo en el search_path
+CREATE SCHEMA IF NOT EXISTS security;
+SET search_path TO security;
 
 -- Extensión para gen_random_uuid()
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
