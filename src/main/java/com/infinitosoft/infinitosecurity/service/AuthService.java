@@ -90,4 +90,10 @@ public class AuthService {
 
         return info;
     }
+
+    public UUID obtenerIdPorCorreo(String correoElectronico) {
+        return usuarioRepository.findByCorreoElectronico(correoElectronico)
+                .map(Usuario::getId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+    }
 }

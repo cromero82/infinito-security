@@ -11,9 +11,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -62,5 +64,15 @@ public class AuthController {
     @PostMapping("/claims")
     public ResponseEntity<UserInfo> claims(@RequestBody TokenRequest req) {
         return ResponseEntity.ok(authService.getClaims(req.getToken()));
+    }
+
+    @GetMapping("/usuario-id")
+    public ResponseEntity<?> obtenerIdPorCorreo(@RequestParam("correoElectronico") String correoElectronico) {
+        try {
+            UUID id = authService.obtenerIdPorCorreo(correoElectronico);
+            return ResponseEntity.ok(id);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

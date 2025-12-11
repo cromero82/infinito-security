@@ -19,6 +19,8 @@
         <java.version>17</java.version>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.resources.encoding>UTF-8</maven.resources.encoding>
         <!-- Lombok version detected in previous Gradle setup -->
         <lombok.version>1.18.42</lombok.version>
     </properties>
@@ -94,6 +96,20 @@
 
     <build>
         <plugins>
+            <!-- Ensure resources are handled as UTF-8 and avoid filtering .properties files -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>${maven.resources.encoding}</encoding>
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>properties</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>sql</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>md</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
             <!-- Compiler plugin: release 17 and annotation processors -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
