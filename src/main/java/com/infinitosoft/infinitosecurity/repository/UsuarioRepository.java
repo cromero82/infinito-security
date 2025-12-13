@@ -1,0 +1,12 @@
+package com.infinitosoft.infinitosecurity.repository;
+
+import com.infinitosoft.infinitosecurity.model.Usuario;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
+    Optional<Usuario> findByCorreoElectronico(String correoElectronico);
+    boolean existsByCorreoElectronico(String correoElectronico);
+}
