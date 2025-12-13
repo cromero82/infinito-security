@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtService {
@@ -75,7 +75,7 @@ public class JwtService {
                     m.put("nombre", r.getNombre());
                     return m;
                 })
-                .toList();
+                .collect(Collectors.toList());
         claims.put("roles", rolesClaim);
 
         return Jwts.builder()
@@ -119,7 +119,8 @@ public class JwtService {
         String telefono = claims.get("telefono", String.class);
         Object rolesObj = claims.get("roles");
         List<Rol> rolList = List.of();
-        if (rolesObj instanceof List<?> list) {
+        if (rolesObj instanceof List<?>) {
+            List<?> list = (List<?>) rolesObj;
             if (!list.isEmpty() && list.get(0) instanceof Map) {
                 // Formato nuevo: List<Map> con {sigla, nombre}
                 rolList = list.stream()
@@ -128,13 +129,13 @@ public class JwtService {
                                 .sigla(Objects.toString(m.get("sigla"), null))
                                 .nombre(Objects.toString(m.get("nombre"), null))
                                 .build())
-                        .toList();
+                        .collect(Collectors.toList());
             } else if (!list.isEmpty() && list.get(0) instanceof String) {
                 // Formato legado: List<String> (solo siglas)
                 rolList = list.stream()
                         .map(String.class::cast)
                         .map(sigla -> Rol.builder().sigla(sigla).build())
-                        .toList();
+                        .collect(Collectors.toList());
             } else if (list.isEmpty()) {
                 rolList = List.of();
             }

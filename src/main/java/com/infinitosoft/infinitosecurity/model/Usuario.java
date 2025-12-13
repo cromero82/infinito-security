@@ -1,8 +1,8 @@
 package com.infinitosoft.infinitosecurity.model;
 
-import jakarta.persistence.*;
 import lombok.*;
 
+import javax.persistence.*;
 import java.util.*;
 
 @Getter
