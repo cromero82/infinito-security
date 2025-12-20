@@ -3,6 +3,7 @@ package com.infinitosoft.infinitosecurity.controller;
 import com.infinitosoft.infinitosecurity.dto.LoginRequest;
 import com.infinitosoft.infinitosecurity.dto.RegisterRequest;
 import com.infinitosoft.infinitosecurity.dto.TokenRequest;
+import com.infinitosoft.infinitosecurity.dto.UpdateUserRequest;
 import com.infinitosoft.infinitosecurity.dto.UserInfo;
 import com.infinitosoft.infinitosecurity.model.Usuario;
 import com.infinitosoft.infinitosecurity.service.AuthService;
@@ -73,6 +74,34 @@ public class AuthController {
             return ResponseEntity.ok(id);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/restaurar-contrasena")
+    public ResponseEntity<?> restaurarContrasena(@RequestParam("correoElectronico") String correoElectronico) {
+        try {
+            authService.restaurarContrasena(correoElectronico);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/actualizar-usuario")
+    public ResponseEntity<?> actualizarUsuario(@RequestBody UpdateUserRequest request, @RequestHeader("Authorization") String token) {
+        try {
+            Usuario u = authService.actualizarUsuario(request, token);
+            return ResponseEntity.ok(u.getId());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }
