@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -103,5 +104,15 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/usuarios")
+    public ResponseEntity<List<Usuario>> listarUsuarios() {
+        return ResponseEntity.ok(authService.listarUsuarios());
+    }
+
+    @GetMapping("/usuarios-no-admin")
+    public ResponseEntity<List<Usuario>> listarUsuariosNoAdmin() {
+        return ResponseEntity.ok(authService.listarUsuariosNoAdmin());
     }
 }

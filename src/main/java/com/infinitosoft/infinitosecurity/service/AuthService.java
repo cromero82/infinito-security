@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Random;
 import java.util.Map;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -211,6 +212,16 @@ public class AuthService {
         }
 
         return usuarioRepository.save(usuario);
+    }
+
+    public List<Usuario> listarUsuarios() {
+        logger.info("Iniciando servicio listarUsuarios");
+        return usuarioRepository.findAll();
+    }
+
+    public List<Usuario> listarUsuariosNoAdmin() {
+        logger.info("Iniciando servicio listarUsuariosNoAdmin");
+        return usuarioRepository.findAllByRolSiglaNotAdmin();
     }
 
     private String generarContrasenaTemporal() {

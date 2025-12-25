@@ -38,3 +38,17 @@ Respuesta esperada:
 - 400 Bad Request si no se envía ningún campo para actualizar o el token es inválido.
 - 404 Not Found si el usuario asociado al token no existe.
 - 409 Conflict si el nuevo correo electrónico ya está en uso por otro usuario.
+
+## Listar usuarios (Auth Service)
+
+Obtiene la lista completa de usuarios registrados en el sistema.
+
+```
+curl --location --request GET 'http://localhost:8081/auth/usuarios'
+```
+
+Respuesta esperada:
+- 200 OK con un arreglo JSON conteniendo los usuarios.
+
+Notas:
+- Este endpoint es público según la configuración actual (`/auth/**` permitido).
