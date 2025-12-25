@@ -2,6 +2,7 @@ package com.infinitosoft.infinitosecurity.service;
 
 import com.infinitosoft.infinitosecurity.dto.UpdateUserRequest;
 import com.infinitosoft.infinitosecurity.dto.UserInfo;
+import com.infinitosoft.infinitosecurity.dto.UsuarioRolDto;
 import com.infinitosoft.infinitosecurity.model.Rol;
 import com.infinitosoft.infinitosecurity.model.Usuario;
 import com.infinitosoft.infinitosecurity.repository.RolRepository;
@@ -23,6 +24,8 @@ import java.util.UUID;
 import java.util.Random;
 import java.util.Map;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -212,6 +215,29 @@ public class AuthService {
         }
 
         return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void actualizarRolesUsuarios(UsuarioRolDto dto) {
+        logger.info("Iniciando servicio actualizarRolesUsuarios para usuario: {}", dto.getCorreoElectronico());
+        
+        if (dto.getCorreoElectronico() == null || dto.getCorreoElectronico().isBlank()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio");
+        }
+
+        Usuario usuario = usuarioRepository.findByCorreoElectronico(dto.getCorreoElectronico())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + dto.getCorreoElectronico()));
+
+        if (dto.getRoles() != null) {
+            Set<Rol> nuevosRoles = new HashSet<>();
+            for (String sigla : dto.getRoles()) {
+                Rol rol = rolRepository.findBySigla(sigla)
+                        .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con sigla: " + sigla));
+                nuevosRoles.add(rol);
+            }
+            usuario.setRoles(nuevosRoles);
+            usuarioRepository.save(usuario);
+        }
     }
 
     public List<Usuario> listarUsuarios() {

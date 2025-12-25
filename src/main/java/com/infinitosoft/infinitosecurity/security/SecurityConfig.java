@@ -17,7 +17,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                    .antMatchers("/auth/**",   "/actuator/**").permitAll()
+                    .antMatchers("/auth/**", "/roles/**", "/actuator/**").permitAll()
                     .anyRequest().authenticated()
                 .and()
                 .httpBasic(Customizer.withDefaults());

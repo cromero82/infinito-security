@@ -5,6 +5,7 @@ import com.infinitosoft.infinitosecurity.dto.RegisterRequest;
 import com.infinitosoft.infinitosecurity.dto.TokenRequest;
 import com.infinitosoft.infinitosecurity.dto.UpdateUserRequest;
 import com.infinitosoft.infinitosecurity.dto.UserInfo;
+import com.infinitosoft.infinitosecurity.dto.UsuarioRolDto;
 import com.infinitosoft.infinitosecurity.model.Usuario;
 import com.infinitosoft.infinitosecurity.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -101,6 +102,18 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/actualizar-roles-usuarios")
+    public ResponseEntity<?> actualizarRolesUsuarios(@RequestBody UsuarioRolDto request) {
+        try {
+            authService.actualizarRolesUsuarios(request);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

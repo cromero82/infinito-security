@@ -39,6 +39,24 @@ Respuesta esperada:
 - 404 Not Found si el usuario asociado al token no existe.
 - 409 Conflict si el nuevo correo electrónico ya está en uso por otro usuario.
 
+## Actualizar roles de usuario (Auth Service)
+
+Permite actualizar los roles de un usuario identificado por su correo electrónico.
+
+```
+curl --location --request PUT 'http://localhost:8081/auth/actualizar-roles-usuarios' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "correoElectronico": "usuario1@example.com",
+    "roles": ["admin", "vendedor"]
+}'
+```
+
+Respuesta esperada:
+- 204 No Content si la actualización fue exitosa.
+- 400 Bad Request si el usuario o algún rol no existe.
+- 500 Internal Server Error en caso de error inesperado.
+
 ## Listar usuarios (Auth Service)
 
 Obtiene la lista completa de usuarios registrados en el sistema.
@@ -52,3 +70,28 @@ Respuesta esperada:
 
 Notas:
 - Este endpoint es público según la configuración actual (`/auth/**` permitido).
+
+## Listar usuarios no administradores (Auth Service)
+
+Obtiene la lista de usuarios que no tienen el rol de administrador.
+
+```
+curl --location --request GET 'http://localhost:8081/auth/usuarios-no-admin'
+```
+
+Respuesta esperada:
+- 200 OK con un arreglo JSON conteniendo los usuarios filtrados.
+
+## Listar roles (Rol Service)
+
+Obtiene la lista completa de roles disponibles en el sistema.
+
+```
+curl --location --request GET 'http://localhost:8081/roles'
+```
+
+Respuesta esperada:
+- 200 OK con un arreglo JSON conteniendo los roles (id, nombre, sigla).
+
+Notas:
+- Este endpoint es público según la configuración actual (`/roles/**` permitido).
