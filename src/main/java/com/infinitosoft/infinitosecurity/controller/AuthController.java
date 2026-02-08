@@ -79,6 +79,16 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<?> obtenerUsuarioPorId(@PathVariable("id") UUID id) {
+        try {
+            UserInfo u = authService.obtenerUsuarioPorId(id);
+            return ResponseEntity.ok(u);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @PostMapping("/restaurar-contrasena")
     public ResponseEntity<?> restaurarContrasena(@RequestParam("correoElectronico") String correoElectronico) {
         try {

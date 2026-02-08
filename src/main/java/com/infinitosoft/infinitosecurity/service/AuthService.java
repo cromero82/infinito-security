@@ -121,6 +121,19 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
     }
 
+    public UserInfo obtenerUsuarioPorId(UUID id) {
+        logger.info("Iniciando servicio obtenerUsuarioPorId para id: {}", id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        return UserInfo.builder()
+                .nombre(usuario.getNombre())
+                .correoElectronico(usuario.getCorreoElectronico())
+                .telefono(usuario.getTelefono())
+                .roles(new java.util.ArrayList<>(usuario.getRoles()))
+                .build();
+    }
+
     /**
      * Restaura la contraseña del usuario enviado por correo electrónico:
      * - Verifica existencia del usuario
