@@ -57,6 +57,21 @@ Respuesta esperada:
 - 400 Bad Request si el usuario o algún rol no existe.
 - 500 Internal Server Error en caso de error inesperado.
 
+## Logout (Auth Service)
+
+Finaliza la sesión del usuario. Actualmente, al ser un sistema basado en JWT sin estado y sin lista negra, este endpoint es informativo o para compatibilidad futura.
+
+```
+curl --location --request POST 'http://localhost:8081/auth/logout' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "token": "TU_TOKEN_JWT"
+}'
+```
+
+Respuesta esperada:
+- 204 No Content.
+
 ## Listar usuarios (Auth Service)
 
 Obtiene la lista completa de usuarios registrados en el sistema.
