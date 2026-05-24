@@ -33,6 +33,20 @@ Autentica a un usuario y devuelve un token JWT.
 
 **Endpoint:** `POST /auth/login`
 
+### Inicio de sesión de Invitado
+Permite iniciar sesión como invitado sin proporcionar credenciales. El sistema genera un token genérico para este tipo de usuario.
+
+**Endpoint:** `POST /auth/login-guest`
+
+**Ejemplo de solicitud:**
+```bash
+curl --location --request POST 'http://localhost:8081/auth/login-guest'
+```
+
+**Respuesta esperada:**
+- `200 OK`: Devuelve el token JWT (String) en el cuerpo de la respuesta.
+- `500 Internal Server Error`: Si ocurre un error inesperado al procesar la sesión.
+
 ### Validar Token
 Verifica si un token JWT es válido.
 

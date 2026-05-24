@@ -80,6 +80,40 @@ public class AuthService {
         return jwtService.generateToken(jti, usuario);
     }
 
+    @Transactional
+    public String iniciarSesionInvitado() {
+        logger.info("Iniciando servicio iniciarSesionInvitado");
+        String correoGuest = "invitado@infinito.com";
+        
+        // Asegurar que el rol 'invitado' exista
+        Rol rolInvitado = rolRepository.findBySigla("invitado")
+                .orElseGet(() -> rolRepository.save(Rol.builder()
+                        .nombre("Invitado")
+                        .sigla("invitado")
+                        .build()));
+
+        // Buscar o crear usuario invitado genérico
+        Usuario usuario = usuarioRepository.findByCorreoElectronico(correoGuest)
+                .orElseGet(() -> {
+                    Usuario u = Usuario.builder()
+                            .nombre("Invitado del Sistema")
+                            .correoElectronico(correoGuest)
+                            .contrasena(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .telefono("0000000000")
+                            .activo(true)
+                            .build();
+                    u.setRoles(Set.of(rolInvitado));
+                    return usuarioRepository.save(u);
+                });
+
+        if (!usuario.getActivo()) {
+            throw new IllegalStateException("Usuario invitado inactivo");
+        }
+
+        String jti = UUID.randomUUID().toString();
+        return jwtService.generateToken(jti, usuario);
+    }
+
     public boolean validarToken(String token) {
         logger.info("Iniciando servicio validarToken");
         return jwtService.isTokenValid(token);

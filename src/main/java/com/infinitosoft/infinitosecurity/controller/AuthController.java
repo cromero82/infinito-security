@@ -55,6 +55,19 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/login-guest")
+    public ResponseEntity<?> loginGuest() {
+        log.info("Intento de login para invitado");
+        try {
+            String token = authService.iniciarSesionInvitado();
+            log.info("Login de invitado exitoso");
+            return ResponseEntity.ok(token);
+        } catch (Exception e) {
+            log.error("Error en login de invitado: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @PostMapping("/validate")
     public ResponseEntity<?> validate(@RequestBody TokenRequest req) {
         log.info("Validando token");
